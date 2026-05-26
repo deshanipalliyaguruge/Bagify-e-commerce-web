@@ -37,5 +37,8 @@ export const ROUTES = {
     register: '/auth/register',
     forgotPassword: '/auth/forgot-password',
     resetPassword: '/auth/reset-password',
+    verifyEmail: '/auth/verify-email',
+    callback: '/auth/callback',
   },
+  admin: '/admin',
 } as const
