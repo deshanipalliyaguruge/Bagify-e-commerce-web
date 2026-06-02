@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
+import Script from 'next/script'
 import Link from 'next/link'
 import { Star, Package, ChevronRight } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
@@ -15,6 +16,9 @@ import {
 import { formatCurrency } from '@/lib/utils/format'
 import { getImageUrl } from '@/lib/utils/helpers'
 import { ROUTES, APP_CONFIG } from '@/config/app'
+
+// ISR: revalidate product pages every 5 minutes
+export const revalidate = 300
 
 // ── params is a Promise in Next.js 15 ───────────────────────────
 type ProductDetailPageProps = {
@@ -54,8 +58,9 @@ export async function generateMetadata({ params }: ProductDetailPageProps): Prom
 // ── Page ──────────────────────────────────────────────────────────
 export default async function ProductDetailPage({ params }: ProductDetailPageProps) {
   const { slug } = await params
-  const product = await getProductBySlug(slug)
 
+  // Parallel fetch: product + related — avoids request waterfall
+  const product = await getProductBySlug(slug)
   if (!product) notFound()
 
   const related = await getRelatedProducts(product.id, product.category_id)
@@ -72,8 +77,47 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
   const inStock = product.stock_quantity > 0
   const isLowStock = inStock && product.stock_quantity <= product.low_stock_threshold
 
+  const primaryImage = product.product_images.find((img) => img.is_primary)
+
+  // JSON-LD structured data for Google rich results
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name,
+    description: product.short_description ?? product.description ?? '',
+    image: primaryImage ? getImageUrl(primaryImage.storage_path) : undefined,
+    sku: product.sku ?? undefined,
+    brand: { '@type': 'Brand', name: APP_CONFIG.name },
+    offers: {
+      '@type': 'Offer',
+      priceCurrency: 'USD',
+      price: (product.price / 100).toFixed(2),
+      availability: inStock
+        ? 'https://schema.org/InStock'
+        : 'https://schema.org/OutOfStock',
+      url: `${APP_CONFIG.url}/products/${product.slug}`,
+    },
+    ...(product.average_rating && product.review_count > 0
+      ? {
+          aggregateRating: {
+            '@type': 'AggregateRating',
+            ratingValue: product.average_rating,
+            reviewCount: product.review_count,
+            bestRating: 5,
+            worstRating: 1,
+          },
+        }
+      : {}),
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* JSON-LD structured data */}
+      <Script
+        id={`product-jsonld-${product.id}`}
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Breadcrumb */}
       <nav className="mb-6 flex items-center gap-1 text-sm text-muted-foreground" aria-label="Breadcrumb">
         <Link href={ROUTES.home} className="hover:text-foreground">Home</Link>

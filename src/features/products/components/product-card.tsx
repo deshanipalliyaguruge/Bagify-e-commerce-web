@@ -18,6 +18,7 @@ interface ProductCardProps {
   primaryImagePath?: string | null
   primaryImageAlt?: string | null
   isFeatured?: boolean
+  priority?: boolean        // true for above-fold images (LCP)
   className?: string
 }
 
@@ -31,6 +32,7 @@ export function ProductCard({
   primaryImagePath,
   primaryImageAlt,
   isFeatured,
+  priority = false,
   className,
 }: ProductCardProps) {
   const isOnSale = compareAtPrice !== null && compareAtPrice !== undefined && compareAtPrice > price
@@ -54,7 +56,7 @@ export function ProductCard({
           fill
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
           className="object-cover transition-transform duration-500 group-hover:scale-105"
-          priority={false}
+          priority={priority}
         />
         {/* Badges */}
         <div className="absolute left-2 top-2 flex flex-col gap-1">

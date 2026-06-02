@@ -1,3 +1,4 @@
+import { unstable_cache } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
 import { PAGINATION } from '@/config/app'
 import type { ProductFilters, ProductListResult, ProductFull } from '@/features/products/types/product.types'
@@ -158,26 +159,42 @@ export async function getAllProductSlugs(): Promise<{ slug: string }[]> {
 // Categories
 // ─────────────────────────────────────────────────────────────────
 
-export async function getActiveCategories(): Promise<Category[]> {
-  const supabase = await createClient()
-  const { data } = await supabase
-    .from('categories')
-    .select('*')
-    .eq('is_active', true)
-    .order('display_order', { ascending: true })
-  return (data ?? []) as Category[]
-}
+/**
+ * Active categories — cached for 1 hour, tagged for on-demand revalidation.
+ * Revalidate via: revalidateTag('categories')
+ */
+export const getActiveCategories = unstable_cache(
+  async (): Promise<Category[]> => {
+    const supabase = await createClient()
+    const { data } = await supabase
+      .from('categories')
+      .select('*')
+      .eq('is_active', true)
+      .order('display_order', { ascending: true })
+    return (data ?? []) as Category[]
+  },
+  ['active-categories'],
+  { revalidate: 3600, tags: ['categories'] },
+)
 
-export async function getFeaturedProducts(limit = 8) {
-  const supabase = await createClient()
-  const { data } = await supabase
-    .from('products')
-    .select(
-      'id, name, slug, price, compare_at_price, review_count, average_rating, primary_image_path, primary_image_alt, is_featured',
-    )
-    .eq('is_active', true)
-    .eq('is_featured', true)
-    .order('created_at', { ascending: false })
-    .limit(limit)
-  return data ?? []
-}
+/**
+ * Featured products — cached for 5 minutes, tagged for on-demand revalidation.
+ * Revalidate via: revalidateTag('featured-products')
+ */
+export const getFeaturedProducts = unstable_cache(
+  async (limit = 8) => {
+    const supabase = await createClient()
+    const { data } = await supabase
+      .from('products')
+      .select(
+        'id, name, slug, price, compare_at_price, review_count, average_rating, primary_image_path, primary_image_alt, is_featured',
+      )
+      .eq('is_active', true)
+      .eq('is_featured', true)
+      .order('created_at', { ascending: false })
+      .limit(limit)
+    return data ?? []
+  },
+  ['featured-products'],
+  { revalidate: 300, tags: ['featured-products'] },
+)

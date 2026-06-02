@@ -10,6 +10,9 @@ import { ProductSearch } from '@/features/products/components/product-search'
 import { PaginationControls } from '@/features/products/components/product-pagination'
 import { ProductGridSkeleton } from '@/features/products/components/product-skeleton'
 
+// Revalidate shop listings every 60 seconds
+export const revalidate = 60
+
 export const metadata: Metadata = {
   title: `Shop — ${APP_CONFIG.name}`,
   description: 'Browse our full collection of premium bags and accessories.',
