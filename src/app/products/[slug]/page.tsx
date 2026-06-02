@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { ProductImageGallery } from '@/features/products/components/product-image-gallery'
 import { ProductCard } from '@/features/products/components/product-card'
+import { AddToCartButton } from '@/features/cart/components/add-to-cart-button'
 import {
   getProductBySlug,
   getRelatedProducts,
@@ -161,6 +162,22 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
               <span className="text-destructive font-medium">Out of Stock</span>
             )}
           </div>
+
+          {/* Add to cart */}
+          <AddToCartButton
+            product={{
+              productId: product.id,
+              variantId: null,
+              name: product.name,
+              slug: product.slug,
+              price: product.price,
+              imagePath: product.product_images.find((img) => img.is_primary)?.storage_path ?? null,
+              maxQuantity: product.stock_quantity,
+            }}
+            disabled={!inStock}
+            size="lg"
+            className="w-full"
+          />
 
           {/* Tags */}
           {product.tags.length > 0 && (
