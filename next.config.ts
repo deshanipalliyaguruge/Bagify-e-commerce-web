@@ -1,11 +1,14 @@
 import type { NextConfig } from 'next'
 
 // ── Content Security Policy ────────────────────────────────────────
-// Restrict what resources the browser can load.
-// Supabase domains are explicitly whitelisted for images and API calls.
-const supabaseHost = process.env.NEXT_PUBLIC_SUPABASE_URL
-  ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname
-  : '*.supabase.co'
+// Safely parse the Supabase hostname — falls back if env var is missing or a placeholder
+const supabaseHost = (() => {
+  try {
+    return new URL(process.env.NEXT_PUBLIC_SUPABASE_URL!).hostname
+  } catch {
+    return '*.supabase.co'
+  }
+})()
 
 const ContentSecurityPolicy = [
   `default-src 'self'`,
@@ -61,30 +64,37 @@ const nextConfig: NextConfig = {
 
   // ── Security & caching headers ──────────────────────────────────
   async headers() {
+    const isProd = process.env.NODE_ENV === 'production'
     return [
       // Security headers on every route
       {
         source: '/(.*)',
         headers: securityHeaders,
       },
-      // Long-lived cache for immutable Next.js static chunks
-      {
-        source: '/_next/static/(.*)',
-        headers: [
-          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
-        ],
-      },
-      // 24h cache + 7d stale-while-revalidate for optimised images
-      {
-        source: '/_next/image(.*)',
-        headers: [
-          { key: 'Cache-Control', value: 'public, max-age=86400, stale-while-revalidate=604800' },
-        ],
-      },
+      // /_next/* headers only in production — Next.js manages these in dev
+      ...(isProd
+        ? [
+            // Long-lived cache for immutable Next.js static chunks
+            {
+              source: '/_next/static/(.*)',
+              headers: [
+                { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+              ],
+            },
+            // 24h cache + 7d stale-while-revalidate for optimised images
+            {
+              source: '/_next/image(.*)',
+              headers: [
+                { key: 'Cache-Control', value: 'public, max-age=86400, stale-while-revalidate=604800' },
+              ],
+            },
+          ]
+        : []),
       // API routes — never cache
       {
         source: '/api/(.*)',
         headers: [
+
           { key: 'Cache-Control', value: 'no-store, max-age=0' },
         ],
       },

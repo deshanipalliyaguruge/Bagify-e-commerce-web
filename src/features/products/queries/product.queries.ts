@@ -1,4 +1,5 @@
 import { unstable_cache } from 'next/cache'
+import { createPublicClient } from '@/lib/supabase/server'
 import { createClient } from '@/lib/supabase/server'
 import { PAGINATION } from '@/config/app'
 import type { ProductFilters, ProductListResult, ProductFull } from '@/features/products/types/product.types'
@@ -165,7 +166,8 @@ export async function getAllProductSlugs(): Promise<{ slug: string }[]> {
  */
 export const getActiveCategories = unstable_cache(
   async (): Promise<Category[]> => {
-    const supabase = await createClient()
+    // createPublicClient() — no cookies(), safe inside unstable_cache
+    const supabase = createPublicClient()
     const { data } = await supabase
       .from('categories')
       .select('*')
@@ -183,7 +185,8 @@ export const getActiveCategories = unstable_cache(
  */
 export const getFeaturedProducts = unstable_cache(
   async (limit = 8) => {
-    const supabase = await createClient()
+    // createPublicClient() — no cookies(), safe inside unstable_cache
+    const supabase = createPublicClient()
     const { data } = await supabase
       .from('products')
       .select(

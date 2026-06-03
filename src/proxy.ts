@@ -7,19 +7,22 @@ import { NextResponse, type NextRequest } from 'next/server'
  * Admin routes: /admin/*
  *   → Unauthenticated: redirect to login
  *   → Authenticated non-admin: the /admin layout does the role check
- *     (middleware avoids DB queries for performance)
+ *     (proxy avoids DB queries for performance)
  *
  * Protected routes: /account, /checkout, /orders
  *   → Unauthenticated: redirect to login with redirectTo param
  *
  * Auth routes: /auth/login, /auth/register
  *   → Authenticated: redirect to home (prevent double-login)
+ *
+ * Next.js 16: middleware.ts is deprecated — this file is proxy.ts.
+ * The exported function must be named `proxy`.
  */
 
 const PROTECTED_ROUTES = ['/account', '/checkout', '/orders', '/admin']
 const AUTH_ONLY_ROUTES = ['/auth/login', '/auth/register']
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // Refresh session on every request (required by @supabase/ssr)
   const { supabaseResponse, user } = await updateSession(request)
 
