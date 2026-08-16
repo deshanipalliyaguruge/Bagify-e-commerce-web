@@ -40,15 +40,11 @@ export function CartDrawer({ children }: { children?: React.ReactNode }) {
 
   return (
     <Sheet>
-      <SheetTrigger className="relative" aria-label={`Cart (${totalItems} items)`}>
-        {children ?? (
-          <span className="relative inline-flex items-center">
-            <ShoppingCart className="h-5 w-5" />
-            {totalItems > 0 && (
-              <span className="absolute -right-2 -top-2 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
-                {totalItems > 99 ? '99+' : totalItems}
-              </span>
-            )}
+      <SheetTrigger className="relative inline-flex" aria-label={`Cart (${totalItems} items)`}>
+        {children ?? <ShoppingCart className="h-5 w-5" />}
+        {totalItems > 0 && (
+          <span className="absolute -right-1.5 -top-1.5 flex min-w-4.5 h-4.5 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground shadow-sm ring-2 ring-background">
+            {totalItems > 99 ? '99+' : totalItems}
           </span>
         )}
       </SheetTrigger>

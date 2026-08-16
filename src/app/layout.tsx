@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 import { CartProvider } from '@/features/cart/components/cart-provider'
 import { APP_CONFIG } from '@/config/app'
+import { StorefrontShell } from '@/components/storefront-shell'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -81,7 +82,9 @@ export default function RootLayout({
           CartProvider activates the Zustand ↔ Supabase sync side-effect.
           It is a Client Component boundary but renders no markup.
         */}
-        <CartProvider>{children}</CartProvider>
+        <CartProvider>
+          <StorefrontShell>{children}</StorefrontShell>
+        </CartProvider>
       </body>
     </html>
   )

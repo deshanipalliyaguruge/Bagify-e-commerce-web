@@ -38,15 +38,25 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
   ])
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="mb-6 text-3xl font-bold tracking-tight">Shop</h1>
+    <div className="flex-1">
+      <section className="border-b bg-gradient-to-r from-secondary/80 via-background to-orange-50 px-4 py-10">
+        <div className="container mx-auto">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">The Bagify collection</p>
+          <h1 className="mt-2 text-4xl font-bold tracking-tight">Find your everyday bag</h1>
+          <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">Explore practical, beautifully made bags for work, weekends, travel, and everything in between.</p>
+        </div>
+      </section>
+
+      <div className="container mx-auto px-4 py-10">
 
       <div className="flex flex-col gap-8 lg:flex-row">
         {/* Sidebar filters — wrapped in Suspense for useSearchParams */}
-        <aside className="w-full lg:w-56 lg:flex-shrink-0">
-          <Suspense>
-            <ProductFilters categories={categories} currentCategory={filters.category} />
-          </Suspense>
+        <aside className="w-full lg:w-60 lg:flex-shrink-0">
+          <div className="rounded-2xl border bg-card p-4 shadow-sm lg:sticky lg:top-32">
+            <Suspense>
+              <ProductFilters categories={categories} currentCategory={filters.category} />
+            </Suspense>
+          </div>
         </aside>
 
         {/* Main content */}
@@ -83,6 +93,7 @@ export default async function ShopPage({ searchParams }: ShopPageProps) {
             </Suspense>
           )}
         </div>
+      </div>
       </div>
     </div>
   )
